@@ -82,7 +82,7 @@ jobs:
         id: job_url
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          job_name: tf_action
+          job_name: tf_plan
 
       - name: Plan
         id: plan
@@ -169,7 +169,7 @@ jobs:
         id: apply_job_url
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          job_name: tf_action
+          job_name: tf_apply
 
       - name: Download planfile
         uses: actions/download-artifact@v4
