@@ -161,8 +161,6 @@ jobs:
       run:
         working-directory: ${{ needs.comment.outputs.tfdir }}
 
-
-
     steps:
       - name: Get Current Job Log URL
         uses: Tiryoh/gha-jobid-action@v1
@@ -178,8 +176,9 @@ jobs:
           path: ${{ github.workspace}}/${{ needs.comment.outputs.tfdir }}
 
       - name: Terraform apply
-        if: ${{ needs.comment.outputs.action }} == "apply"
         run: |
+          pwd
+          ls -l
           terraform apply ${{ needs.comment.outputs.plan_id }}
 
       - name: Comment on Pull Request
