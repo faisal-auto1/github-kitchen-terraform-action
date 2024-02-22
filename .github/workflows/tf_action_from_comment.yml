@@ -134,7 +134,9 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: ${{ steps.plan.outputs.plan_uuid }}
+          path: ${{ github.workspace}}/${{ needs.comment.outputs.tfdir }}
       - name: Display structure of downloaded files
         run: |
+          cd ${{ github.workspace}}/${{ needs.comment.outputs.tfdir }}
           pwd
           ls -lr
