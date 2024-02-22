@@ -134,6 +134,6 @@ jobs:
         with:
           name: {{ steps.plan.outputs.plan_uuid }}
       - name: Display structure of downloaded files
-          run: |
-            pwd
-            ls -lr
+        run: |
+          pwd
+          ls -lr
