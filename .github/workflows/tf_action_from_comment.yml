@@ -6,6 +6,12 @@ on:
       - created
   pull_request:
 
+permissions:
+  id-token: write
+  contents: read
+  issues: write
+  pull-requests: write
+
 jobs:
   comment:
     name: read_comment
@@ -54,12 +60,23 @@ jobs:
         with:
           ref: ${{ steps.comment-branch.outputs.head_ref }}
 
+      - name: Extract Pull Request Number
+        id: extract_pr_number
+        run: |
+          npm install @actions/github
+          echo "::set-output name=PR_NUMBER::$(jq -r '.issue.number' $GITHUB_EVENT_PATH)"
+
+      - name: Get Current Job Log URL
+        uses: Tiryoh/gha-jobid-action@v1
+        id: job_url
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          job_name: tf_action
+
       - name: Plan
         id: plan
         run: |
           set +e
-          echo "testDir"
-          pwd
           export TF_WORKSPACE=${{ needs.comment.outputs.workspace }}
           if [[ $TF_WORKSPACE == "prod" ]]; then
             unset VAULT_TOKEN
@@ -74,8 +91,12 @@ jobs:
             export VAULT_TOKEN="$VAULT_TOKEN_PROD"
           fi
 
+          export uuid=$(uuidgen)
+          echo $uuid
           terraform init -reconfigure > /dev/null 2>&1
-          terraform plan |& tee tf_plan.txt
+          echo "plan_uuid=$uuid" >> "$GITHUB_OUTPUT"
+          terraform plan -no-color -out=/tmp/plan-$uuid
+          terraform show -no-color /tmp/plan-$uuid | tee /tmp/plan-$uuid.txt > /dev/null 2>&1
 
         env:
           VAULT_TOKEN_QA: ${{ secrets.VAULT_TOKEN_QA }}
@@ -83,12 +104,35 @@ jobs:
 
         continue-on-error: true
 
-      - name: Comment Terraform Plan on PR
-        uses: GetTerminus/terraform-pr-commenter@v3
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TF_WORKSPACE: ${{ needs.comment.outputs.workspace }}
+      - name: Save plan file as artifact
+        uses: actions/upload-artifact@v4
         with:
-          commenter_type: plan
-          commenter_input: tf_plan.txt
-          commenter_exitcode: ${{ steps.plan.outputs.exit }}
+          name: ${{ steps.plan.outputs.plan_uuid }}
+          path: /tmp/plan-${{ steps.plan.outputs.plan_uuid }}
+
+      - name: Comment on Pull Request
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+
+            const fs = require('fs');
+            let data = fs.readFileSync("/tmp/plan-${{ steps.plan.outputs.plan_uuid }}.txt", 'utf8');
+            const MAX_GITHUB_COMMENT_LENGTH = 65536;
+
+            if (data.length > MAX_GITHUB_COMMENT_LENGTH) {
+              data = "Please review the plan in github actions logs because it's too long."
+            }
+
+            github.rest.issues.updateComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: context.payload.comment.id,
+              body: "**Terraform Cmd:** " + "`" + context.payload.comment.body + "`" + "\n\n**Terraform Plan:**\n```" + data + "```\n" + "\n**Link:** " + "${{ steps.job_url.outputs.html_url }}#step:6:1\n\n" + "**Plan ID:** " + "`" + "${{ steps.plan.outputs.plan_uuid }}" + "`"
+            })
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: {{ steps.plan.outputs.plan_uuid }}
+        - name: Display structure of downloaded files
+          run: ls -R
