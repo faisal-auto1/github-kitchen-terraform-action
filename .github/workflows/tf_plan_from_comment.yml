@@ -38,6 +38,7 @@ jobs:
             echo "plan_id=$id" >> "$GITHUB_OUTPUT"
           else
             echo "First argument not supported. Expecting either plan or apply"
+          fi
 
           echo "action=$action" >> "$GITHUB_OUTPUT"
           echo "tfdir=$tfdir" >> "$GITHUB_OUTPUT"
