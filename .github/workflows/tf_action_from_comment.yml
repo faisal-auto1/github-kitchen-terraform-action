@@ -4,6 +4,7 @@ on:
   issue_comment:
     types:
       - created
+  pull_request:
 
 permissions:
   id-token: write
@@ -132,7 +133,7 @@ jobs:
 
       - uses: actions/download-artifact@v4
         with:
-          name: {{ steps.plan.outputs.plan_uuid }}
+          name: ${{ steps.plan.outputs.plan_uuid }}
       - name: Display structure of downloaded files
         run: |
           pwd
