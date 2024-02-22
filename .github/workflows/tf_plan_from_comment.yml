@@ -171,7 +171,7 @@ jobs:
           job_name: tf_action
 
       - name: Download planfile
-      - uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v4
         with:
           name: ${{ steps.plan.outputs.plan_uuid }}
           path: ${{ github.workspace}}/${{ needs.comment.outputs.tfdir }}
