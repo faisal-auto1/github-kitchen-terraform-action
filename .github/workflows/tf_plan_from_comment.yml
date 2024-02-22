@@ -30,10 +30,10 @@ jobs:
           action=$(echo "${{ github.event.comment.body }}" | awk '{print $1}')
           tfdir=$(echo "${{ github.event.comment.body }}" | awk '{print $3}')
 
-          if [[ $action == "plan" ]]; then
+          if [[ "$action" == "plan" ]]; then
             workspace=$(echo "${{ github.event.comment.body }}" | awk '{print $2}')
             echo "workspace=$workspace" >> "$GITHUB_OUTPUT"
-          elif [[ $action == "apply" ]]; then
+          elif [[ "$action" == "apply" ]]; then
             id=$(echo "${{ github.event.comment.body }}" | awk '{print $2}')
             echo "plan_id=$id" >> "$GITHUB_OUTPUT"
           else
@@ -49,11 +49,11 @@ jobs:
           echo "Second argument: ${{ steps.extract.outputs.id }}"
           echo "Third argument: ${{ steps.extract.outputs.tfdir }}"
 
-  tfplan:
+  tf_plan:
     needs: comment
     if: ${{ needs.comment.outputs.action }} == "plan"
     runs-on: ubuntu-latest
-    name: "tf_action"
+    name: "tf_plan"
     defaults:
       run:
         working-directory: ${{ needs.comment.outputs.tfdir }}
@@ -151,7 +151,7 @@ jobs:
           pwd
           ls -lr
 
-  tfapply:
+  tf_apply:
     needs: comment
     if: ${{ needs.comment.outputs.action }} == "apply"
     runs-on: ubuntu-latest
