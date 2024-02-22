@@ -1,4 +1,4 @@
-name: "tf_action_from_comment"
+name: "tf_plan_from_comment"
 
 on:
   issue_comment:
@@ -19,6 +19,7 @@ jobs:
     outputs:
       action: ${{ steps.extract.outputs.action }}
       workspace: ${{ steps.extract.outputs.workspace }}
+      plan_id:  ${{ steps.extract.outputs.plan_id }}
       tfdir: ${{ steps.extract.outputs.tfdir }}
 
     steps:
@@ -27,21 +28,30 @@ jobs:
         run: |
           body=$(echo "${{ github.event.comment.body }}")
           action=$(echo "${{ github.event.comment.body }}" | awk '{print $1}')
-          workspace=$(echo "${{ github.event.comment.body }}" | awk '{print $2}')
           tfdir=$(echo "${{ github.event.comment.body }}" | awk '{print $3}')
 
+          if [[ $action == "plan" ]]; then
+            workspace=$(echo "${{ github.event.comment.body }}" | awk '{print $2}')
+            echo "workspace=$workspace" >> "$GITHUB_OUTPUT"
+          elif [[ $action == "apply" ]]; then
+            id=$(echo "${{ github.event.comment.body }}" | awk '{print $2}')
+            echo "plan_id=$id" >> "$GITHUB_OUTPUT"
+          else
+            echo "First argument not supported. Expecting either plan or apply"
+
           echo "action=$action" >> "$GITHUB_OUTPUT"
-          echo "workspace=$workspace" >> "$GITHUB_OUTPUT"
           echo "tfdir=$tfdir" >> "$GITHUB_OUTPUT"
 
       - name: check step output
         run: |
           echo "First argument: ${{ steps.extract.outputs.action }}"
           echo "Second argument: ${{ steps.extract.outputs.workspace }}"
+          echo "Second argument: ${{ steps.extract.outputs.id }}"
           echo "Third argument: ${{ steps.extract.outputs.tfdir }}"
 
   tfplan:
     needs: comment
+    if: ${{ needs.comment.outputs.action }} == "plan"
     runs-on: ubuntu-latest
     name: "tf_action"
     defaults:
@@ -140,3 +150,48 @@ jobs:
           cd ${{ github.workspace}}/${{ needs.comment.outputs.tfdir }}
           pwd
           ls -lr
+
+  tfapply:
+    needs: comment
+    if: ${{ needs.comment.outputs.action }} == "apply"
+    runs-on: ubuntu-latest
+    name: "tf_apply"
+    defaults:
+      run:
+        working-directory: ${{ needs.comment.outputs.tfdir }}
+
+
+
+    steps:
+      - name: Get Current Job Log URL
+        uses: Tiryoh/gha-jobid-action@v1
+        id: apply_job_url
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          job_name: tf_action
+
+      - name: Download planfile
+      - uses: actions/download-artifact@v4
+        with:
+          name: ${{ steps.plan.outputs.plan_uuid }}
+          path: ${{ github.workspace}}/${{ needs.comment.outputs.tfdir }}
+
+      - name: Terraform apply
+        if: ${{ needs.comment.outputs.action }} == "apply"
+        run: |
+          terraform apply ${{ needs.comment.outputs.plan_id }}
+
+      - name: Comment on Pull Request
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+
+            const fs = require('fs');
+
+            github.rest.issues.updateComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: context.payload.comment.id,
+              body: "**Terraform Cmd:** " + "`" + context.payload.comment.body + "\n**Link:** " + "${{ steps.apply_job_url.outputs.html_url }}#step:6:1\n\n"
+            })
