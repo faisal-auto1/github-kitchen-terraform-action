@@ -190,6 +190,7 @@ jobs:
         run: |
           pwd
           ls -l
+          terraform init
           terraform apply ${{ needs.comment.outputs.plan_id }}
 
       - name: Comment on Pull Request
