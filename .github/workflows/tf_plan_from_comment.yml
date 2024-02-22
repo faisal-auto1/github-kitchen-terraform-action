@@ -162,6 +162,9 @@ jobs:
         working-directory: ${{ needs.comment.outputs.tfdir }}
 
     steps:
+      - name: HashiCorp - Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+
       - name: Get Current Job Log URL
         uses: Tiryoh/gha-jobid-action@v1
         id: apply_job_url
