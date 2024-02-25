@@ -112,7 +112,7 @@ jobs:
 
           if [[ "${{ needs.comment.outputs.target }}" == "-target=*" ]]; then
             terraform plan -no-color ${{ needs.comment.outputs.target }} -out=/tmp/plan-$uuid
-          elif [[ -z ${{ needs.comment.outputs.target }} ]]; then
+          elif [[ -z "${{ needs.comment.outputs.target }}" ]]; then
             echo "No target option given, running plan for all resources ..."
             terraform plan -no-color -out=/tmp/plan-$uuid
           else
