@@ -208,7 +208,7 @@ jobs:
           pwd
           ls -l
           terraform init
-          terraform apply ${{ needs.comment.outputs.plan_id }}
+          terraform apply ${{ needs.comment.outputs.plan_id }} -auto-approve
 
       - name: Comment on Pull Request
         uses: actions/github-script@v7
