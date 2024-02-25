@@ -151,7 +151,7 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               comment_id: context.payload.comment.id,
-              body: "**Terraform Cmd:** " + "`" + context.payload.comment.body + "`" + "\n\n**Terraform Plan:**\n```" + data + "```\n" + "\n**Link:** " + "${{ steps.job_url.outputs.html_url }}#step:6:1\n\n" + "**Plan ID:** " + "`" + "${{ steps.plan.outputs.plan_uuid }}" + "`" + "\n\n Please comment again with this command to apply this plan: "+ "`" + "apply " + "${{ steps.plan.outputs.plan_uuid }}" + "${{ needs.comment.outputs.tfdir }}" + "`"
+              body: "**Terraform Cmd:** " + "`" + context.payload.comment.body + "`" + "\n\n**Terraform Plan:**\n```" + data + "```\n" + "\n**Link:** " + "${{ steps.job_url.outputs.html_url }}#step:6:1\n\n" + "**Plan ID:** " + "`" + "${{ steps.plan.outputs.plan_uuid }}" + "`" + "**Apply Command:** \n   Please comment again with this command to apply this plan: "+ "`" + "apply " + "${{ steps.plan.outputs.plan_uuid }}" + " ${{ needs.comment.outputs.tfdir }}" + "`"
             })
 
       - uses: actions/download-artifact@v4
