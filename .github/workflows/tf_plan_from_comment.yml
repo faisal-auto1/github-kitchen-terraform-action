@@ -151,7 +151,7 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               comment_id: context.payload.comment.id,
-              body: "**Terraform Cmd:** " + "`" + context.payload.comment.body + "`" + "\n\n**Terraform Plan:**\n```" + data + "```\n" + "\n**Link:** " + "${{ steps.job_url.outputs.html_url }}#step:6:1\n\n" + "**Plan ID:** " + "`" + "${{ steps.plan.outputs.plan_uuid }}" + "`"
+              body: "**Terraform Cmd:** " + "`" + context.payload.comment.body + "`" + "\n\n**Terraform Plan:**\n```" + data + "```\n" + "\n**Link:** " + "${{ steps.job_url.outputs.html_url }}#step:6:1\n\n" + "**Plan ID:** " + "`" + "${{ steps.plan.outputs.plan_uuid }}" + "`" + "\n\n Please comment again with this command to apply this plan: "+ "`" + "apply " + "${{ steps.plan.outputs.plan_uuid }}" + "${{ needs.comment.outputs.tfdir }}" + "`"
             })
 
       - uses: actions/download-artifact@v4
@@ -193,12 +193,6 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           job_name: tf_apply
 
-      - name: Download planfile
-        uses: actions/download-artifact@v4
-        with:
-          name: ${{ steps.plan.outputs.plan_uuid }}
-          path: ${{ github.workspace}}/${{ needs.comment.outputs.tfdir }}
-
       - name: Terraform apply
         run: |
           pwd
@@ -211,9 +205,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-
             const fs = require('fs');
-
             github.rest.issues.updateComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
