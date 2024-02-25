@@ -164,9 +164,10 @@ jobs:
           pwd
           ls -lr
 
+
   tf_apply:
     needs: comment
-    if: ${{ needs.comment.outputs.action }} == "apply"
+    if: startsWith(github.event.comment.body, 'apply')
     runs-on: ubuntu-latest
     name: "tf_apply"
     defaults:
