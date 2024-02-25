@@ -195,7 +195,7 @@ jobs:
 
       - uses: actions/download-artifact@v4
         with:
-          name: ${{ needs.comment.outputs.plan_id }}
+          name: plan-${{ needs.comment.outputs.plan_id }}
           path: ${{ github.workspace}}/${{ needs.comment.outputs.tfdir }}
       - name: Display structure of downloaded files
         run: |
