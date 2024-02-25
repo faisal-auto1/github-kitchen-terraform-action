@@ -193,12 +193,22 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           job_name: tf_apply
 
+      - uses: actions/download-artifact@v4
+        with:
+          name: ${{ needs.comment.outputs.plan_id }}
+          path: ${{ github.workspace}}/${{ needs.comment.outputs.tfdir }}
+      - name: Display structure of downloaded files
+        run: |
+          cd ${{ github.workspace}}/${{ needs.comment.outputs.tfdir }}
+          pwd
+          ls -lr
+
       - name: Terraform apply
         run: |
           pwd
           ls -l
           terraform init
-          terraform apply ${{ needs.comment.outputs.plan_id }} -auto-approve
+          terraform apply ${{ needs.comment.outputs.plan_id }}
 
       - name: Comment on Pull Request
         uses: actions/github-script@v7
