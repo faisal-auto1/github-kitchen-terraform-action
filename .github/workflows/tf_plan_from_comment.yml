@@ -55,7 +55,7 @@ jobs:
 
   tf_plan:
     needs: comment
-    if: ${{ needs.comment.outputs.action }} == "plan"
+    if: startsWith(github.event.comment.body, 'plan')
     runs-on: ubuntu-latest
     name: "tf_plan"
     defaults:
@@ -110,7 +110,7 @@ jobs:
           terraform init -reconfigure > /dev/null 2>&1
           echo "plan_uuid=$uuid" >> "$GITHUB_OUTPUT"
 
-          if [[ ${{ needs.comment.outputs.target }} == ^"-target=" ]]; then
+          if [[ "${{ needs.comment.outputs.target }}" == "-target=*" ]]; then
             terraform plan -no-color ${{ needs.comment.outputs.target }} -out=/tmp/plan-$uuid
           elif [[ -z ${{ needs.comment.outputs.target }} ]]; then
             echo "No target option given, running plan for all resources ..."
