@@ -36,7 +36,7 @@ jobs:
           if [[ "$action" == "plan" ]]; then
             target=$(echo "${{ github.event.comment.body }}" | awk '{print $4}')
             echo "workspace=$workspace" >> "$GITHUB_OUTPUT"
-          elif [[ "$action" == "apply" && -n "${id}" ]]; then
+          elif [[ "$action" == "apply" ]]; then
             id=$(echo "${{ github.event.comment.body }}" | awk '{print $4}')
             echo "plan_id=$id" >> "$GITHUB_OUTPUT"
           else
