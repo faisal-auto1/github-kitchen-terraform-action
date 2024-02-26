@@ -31,12 +31,13 @@ jobs:
           action=$(echo "${{ github.event.comment.body }}" | awk '{print $1}')
           workspace=$(echo "${{ github.event.comment.body }}" | awk '{print $2}')
           tfdir=$(echo "${{ github.event.comment.body }}" | awk '{print $3}')
-          id=$(echo "${{ github.event.comment.body }}" | awk '{print $4}')
-          target=$(echo "${{ github.event.comment.body }}" | awk '{print $5}')
+          id=$(echo "${{ github.event.comment.body }}" | awk '{print $5}')
 
           if [[ "$action" == "plan" ]]; then
+            target=$(echo "${{ github.event.comment.body }}" | awk '{print $4}')
             echo "workspace=$workspace" >> "$GITHUB_OUTPUT"
           elif [[ "$action" == "apply" && -n "${id}" ]]; then
+            id=$(echo "${{ github.event.comment.body }}" | awk '{print $4}')
             echo "plan_id=$id" >> "$GITHUB_OUTPUT"
           else
             echo "Command not supported. exiting ..."
