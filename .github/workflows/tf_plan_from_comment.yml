@@ -208,5 +208,5 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               comment_id: context.payload.comment.id,
-              body: "**Terraform Cmd:** " + "`" + context.payload.comment.body + "\n**Link:** " + "${{ steps.apply_job_url.outputs.html_url }}#step:6:1\n\n"
+              body: "**Terraform has been applied for:** " + "`" + context.payload.comment.body + "`" + "\n**Link:** " + "${{ steps.apply_job_url.outputs.html_url }}#step:6:1\n"
             })
