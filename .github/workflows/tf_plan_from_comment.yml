@@ -149,7 +149,7 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               comment_id: context.payload.comment.id,
-              body: "**Terraform Cmd:** " + "`" + context.payload.comment.body + "`" + "\n\n**Terraform Plan:**\n```" + data + "```\n" + "\n**Link:** " + "${{ steps.job_url.outputs.html_url }}#step:6:1\n\n" + "**Plan ID:** " + "`" + "${{ steps.plan.outputs.plan_uuid }}" + "`" + "\n\n**How to apply :**\n\n  Please comment again with this command to apply this plan: "+ "```" + "apply" + " ${{ needs.comment.outputs.workspace }}" + " ${{ needs.comment.outputs.tfdir }}" + " ${{ steps.plan.outputs.plan_uuid }}" + "```"
+              body: "**Terraform Cmd:** " + "`" + context.payload.comment.body + "`" + "\n\n**Terraform Plan:**\n```" + data + "```\n" + "\n**Link:** " + "${{ steps.job_url.outputs.html_url }}#step:6:1\n\n" + "**Plan ID:** " + "`" + "${{ steps.plan.outputs.plan_uuid }}" + "`" + "\n\n**How to apply :**\n\n  Please comment again with this command to apply the plan: "+ "```" + "apply" + " ${{ needs.comment.outputs.workspace }}" + " ${{ needs.comment.outputs.tfdir }}" + " ${{ steps.plan.outputs.plan_uuid }}" + "```"
             })
 
 
