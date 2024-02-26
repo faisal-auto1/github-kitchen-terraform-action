@@ -118,7 +118,10 @@ jobs:
           fi
 
           terraform show -no-color /tmp/plan-$uuid | tee /tmp/plan-$uuid.txt > /dev/null 2>&1
-          aws s3 cp /tmp/plan-$uuid s3://faisal-opsinfra-test/
+
+          aws sts get-caller-identity
+
+          aws s3 cp /tmp/plan-$uuid s3://faisal-opsinfra-test/ --region eu-west-1
 
         env:
           VAULT_TOKEN_QA: ${{ secrets.VAULT_TOKEN_QA }}
@@ -184,7 +187,7 @@ jobs:
           export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
 
           cd ${{ github.workspace}}/${{ needs.comment.outputs.tfdir }}
-          aws s3 cp s3://faisal-opsinfra-test/plan-${{ needs.comment.outputs.plan_id }}
+          aws s3 cp s3://faisal-opsinfra-test/plan-${{ needs.comment.outputs.plan_id }} . --region eu-west-1
           pwd
           ls -lr
 
