@@ -110,7 +110,7 @@ jobs:
           terraform init -reconfigure > /dev/null 2>&1
           echo "plan_uuid=$uuid" >> "$GITHUB_OUTPUT"
 
-          if [[ "${{ needs.comment.outputs.target }}" == "-target=*" ]]; then
+          if [[ "${{ needs.comment.outputs.target }}" == "-target="* ]]; then
             terraform plan -no-color ${{ needs.comment.outputs.target }} -out=/tmp/plan-$uuid
           elif [[ -z "${{ needs.comment.outputs.target }}" ]]; then
             echo "No target option given, running plan for all resources ..."
@@ -158,7 +158,7 @@ jobs:
   tf_apply:
     needs: comment
     if: startsWith(github.event.comment.body, 'apply')
-    runs-on: ubuntu-latest
+    runs-on: ${{ needs.comment.outputs.workspace }}
     name: "tf_apply"
     defaults:
       run:
@@ -186,7 +186,7 @@ jobs:
       - name: Display structure of downloaded files
         run: |
           cd ${{ github.workspace}}/${{ needs.comment.outputs.tfdir }}
-          aws s3 cp s3://auto1-ops-infra-qa-plans/${{ needs.comment.outputs.plan_id }} && unzip ${{ needs.comment.outputs.plan_id }}
+          aws s3 cp s3://auto1-ops-infra-plans/${{ needs.comment.outputs.plan_id }} && unzip ${{ needs.comment.outputs.plan_id }}
           pwd
           ls -lr
 
