@@ -48,11 +48,11 @@ jobs:
 
       - name: check step output
         run: |
-          echo "First argument: ${{ steps.extract.outputs.action }}"
-          echo "Second argument: ${{ steps.extract.outputs.workspace }}"
-          echo "Third argument: ${{ steps.extract.outputs.tfdir }}"
-          echo "Fourth argument: ${{ steps.extract.outputs.plan_id }}"
-          echo "Fifth argument: ${{ steps.extract.outputs.target }}"
+          echo "action: ${{ steps.extract.outputs.action }}"
+          echo "workspace: ${{ steps.extract.outputs.workspace }}"
+          echo "tfdir: ${{ steps.extract.outputs.tfdir }}"
+          echo "plan_id: ${{ steps.extract.outputs.plan_id }}"
+          echo "target: ${{ steps.extract.outputs.target }}"
 
   tf_plan:
     needs: comment
@@ -196,7 +196,7 @@ jobs:
           pwd
           ls -l
           terraform init
-          terraform apply plan-${{ needs.comment.outputs.plan_id }} -auto-approve
+          terraform apply -input=false plan-${{ needs.comment.outputs.plan_id }}
 
       - name: Comment on Pull Request
         uses: actions/github-script@v7
