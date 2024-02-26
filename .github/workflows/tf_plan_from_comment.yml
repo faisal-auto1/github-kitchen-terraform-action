@@ -155,7 +155,7 @@ jobs:
   tf_apply:
     needs: comment
     if: startsWith(github.event.comment.body, 'apply')
-    runs-on: ${{ needs.comment.outputs.workspace }}
+    runs-on: ubuntu-latest
     name: "tf_apply"
     defaults:
       run:
