@@ -29,19 +29,19 @@ jobs:
         run: |
           body=$(echo "${{ github.event.comment.body }}")
           action=$(echo "${{ github.event.comment.body }}" | awk '{print $1}')
+          workspace=$(echo "${{ github.event.comment.body }}" | awk '{print $2}')
           tfdir=$(echo "${{ github.event.comment.body }}" | awk '{print $3}')
-          target=$(echo "${{ github.event.comment.body }}" | awk '{print $4}')
+          id=$(echo "${{ github.event.comment.body }}" | awk '{print $4}')
+          target=$(echo "${{ github.event.comment.body }}" | awk '{print $5}')
 
           if [[ "$action" == "plan" ]]; then
-            workspace=$(echo "${{ github.event.comment.body }}" | awk '{print $2}')
             echo "workspace=$workspace" >> "$GITHUB_OUTPUT"
-          elif [[ "$action" == "apply" ]]; then
-            id=$(echo "${{ github.event.comment.body }}" | awk '{print $2}')
+          elif [[ "$action" == "apply" && -n "${id}" ]]; then
             echo "plan_id=$id" >> "$GITHUB_OUTPUT"
           else
-            echo "First argument not supported. Expecting either plan or apply"
+            echo "Command not supported. exiting ..."
+            exit 0
           fi
-
           echo "action=$action" >> "$GITHUB_OUTPUT"
           echo "tfdir=$tfdir" >> "$GITHUB_OUTPUT"
           echo "target=$target" >> "$GITHUB_OUTPUT"
@@ -50,8 +50,9 @@ jobs:
         run: |
           echo "First argument: ${{ steps.extract.outputs.action }}"
           echo "Second argument: ${{ steps.extract.outputs.workspace }}"
-          echo "Second argument: ${{ steps.extract.outputs.id }}"
           echo "Third argument: ${{ steps.extract.outputs.tfdir }}"
+          echo "Fourth argument: ${{ steps.extract.outputs.plan_id }}"
+          echo "Fifth argument: ${{ steps.extract.outputs.target }}"
 
   tf_plan:
     needs: comment
@@ -73,12 +74,6 @@ jobs:
         uses: actions/checkout@v1
         with:
           ref: ${{ steps.comment-branch.outputs.head_ref }}
-
-      - name: Extract Pull Request Number
-        id: extract_pr_number
-        run: |
-          npm install @actions/github
-          echo "::set-output name=PR_NUMBER::$(jq -r '.issue.number' $GITHUB_EVENT_PATH)"
 
       - name: Get Current Job Log URL
         uses: Tiryoh/gha-jobid-action@v1
@@ -120,6 +115,7 @@ jobs:
           fi
 
           terraform show -no-color /tmp/plan-$uuid | tee /tmp/plan-$uuid.txt > /dev/null 2>&1
+          aws s3 cp /tmp/plan-$uuid s3://faisal-test-s3/
 
         env:
           VAULT_TOKEN_QA: ${{ secrets.VAULT_TOKEN_QA }}
@@ -127,11 +123,6 @@ jobs:
 
         continue-on-error: true
 
-      - name: Save plan file as artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ steps.plan.outputs.plan_uuid }}
-          path: /tmp/plan-${{ steps.plan.outputs.plan_uuid }}
 
       - name: Comment on Pull Request
         uses: actions/github-script@v7
@@ -151,7 +142,7 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               comment_id: context.payload.comment.id,
-              body: "**Terraform Cmd:** " + "`" + context.payload.comment.body + "`" + "\n\n**Terraform Plan:**\n```" + data + "```\n" + "\n**Link:** " + "${{ steps.job_url.outputs.html_url }}#step:6:1\n\n" + "**Plan ID:** " + "`" + "${{ steps.plan.outputs.plan_uuid }}" + "`" + "\n\n**How to apply :**\n\n  Please comment again with this command to apply this plan: "+ "```" + "apply " + "${{ steps.plan.outputs.plan_uuid }}" + " ${{ needs.comment.outputs.tfdir }}" + "```"
+              body: "**Terraform Cmd:** " + "`" + context.payload.comment.body + "`" + "\n\n**Terraform Plan:**\n```" + data + "```\n" + "\n**Link:** " + "${{ steps.job_url.outputs.html_url }}#step:6:1\n\n" + "**Plan ID:** " + "`" + "${{ steps.plan.outputs.plan_uuid }}" + "`" + "\n\n**How to apply :**\n\n  Please comment again with this command to apply this plan: "+ "```" + "apply" + " ${{ needs.comment.outputs.workspace }}" + " ${{ needs.comment.outputs.tfdir }}" + " ${{ steps.plan.outputs.plan_uuid }}" + "```"
             })
 
 
@@ -183,10 +174,10 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           job_name: tf_apply
 
-      - name: Display structure of downloaded files
+      - name: Download plan
         run: |
           cd ${{ github.workspace}}/${{ needs.comment.outputs.tfdir }}
-          aws s3 cp s3://auto1-ops-infra-plans/${{ needs.comment.outputs.plan_id }} && unzip ${{ needs.comment.outputs.plan_id }}
+          aws s3 cp s3://faisal-test-s3/plan-${{ needs.comment.outputs.plan_id }}
           pwd
           ls -lr
 
