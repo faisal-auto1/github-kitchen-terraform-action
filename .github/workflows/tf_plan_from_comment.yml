@@ -154,16 +154,6 @@ jobs:
               body: "**Terraform Cmd:** " + "`" + context.payload.comment.body + "`" + "\n\n**Terraform Plan:**\n```" + data + "```\n" + "\n**Link:** " + "${{ steps.job_url.outputs.html_url }}#step:6:1\n\n" + "**Plan ID:** " + "`" + "${{ steps.plan.outputs.plan_uuid }}" + "`" + "\n\n**How to apply :**\n\n  Please comment again with this command to apply this plan: "+ "```" + "apply " + "${{ steps.plan.outputs.plan_uuid }}" + " ${{ needs.comment.outputs.tfdir }}" + "```"
             })
 
-      - uses: actions/download-artifact@v4
-        with:
-          name: ${{ steps.plan.outputs.plan_uuid }}
-          path: ${{ github.workspace}}/${{ needs.comment.outputs.tfdir }}
-      - name: Display structure of downloaded files
-        run: |
-          cd ${{ github.workspace}}/${{ needs.comment.outputs.tfdir }}
-          pwd
-          ls -lr
-
 
   tf_apply:
     needs: comment
@@ -193,13 +183,10 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           job_name: tf_apply
 
-      - uses: actions/download-artifact@v4
-        with:
-          name: plan-${{ needs.comment.outputs.plan_id }}
-          path: ${{ github.workspace}}/${{ needs.comment.outputs.tfdir }}
       - name: Display structure of downloaded files
         run: |
           cd ${{ github.workspace}}/${{ needs.comment.outputs.tfdir }}
+          aws s3 cp s3://auto1-ops-infra-qa-plans/${{ needs.comment.outputs.plan_id }} && unzip ${{ needs.comment.outputs.plan_id }}
           pwd
           ls -lr
 
@@ -208,7 +195,7 @@ jobs:
           pwd
           ls -l
           terraform init
-          terraform apply ${{ needs.comment.outputs.plan_id }} -auto-approve
+          terraform apply plan-${{ needs.comment.outputs.plan_id }} -auto-approve
 
       - name: Comment on Pull Request
         uses: actions/github-script@v7
