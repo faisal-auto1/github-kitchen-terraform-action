@@ -120,9 +120,9 @@ jobs:
 
           terraform show -no-color /tmp/plan-$uuid | tee /tmp/plan-$uuid.txt > /dev/null 2>&1
 
-          aws sts get-caller-identity
+          #aws sts get-caller-identity
 
-          aws s3 cp /tmp/plan-$uuid s3://faisal-opsinfra-test/ --region eu-west-1
+          #aws s3 cp /tmp/plan-$uuid s3://faisal-opsinfra-test/ --region eu-west-1
 
         env:
           VAULT_TOKEN_QA: ${{ secrets.VAULT_TOKEN_QA }}
