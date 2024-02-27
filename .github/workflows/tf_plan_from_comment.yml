@@ -219,7 +219,7 @@ jobs:
           script: |
             github.rest.issues.createComment({
               owner: context.repo.owner,
-              issue_number: context.issue.number
+              issue_number: context.issue.number,
               repo: context.repo.repo,
               body: "*** Changes Detected ***\n\n" +  "Terraform plan is not clean for: \n" + "```" + "Diectory: ${{ steps.plan.outputs.tfplan_dir }}\n" + "Workspace: ${{ steps.plan.outputs.tfplan_workspace }}" + "```" + "\n\n**Link: **" +  "${{ steps.job_url.outputs.html_url }}#step:6:1"
             })
