@@ -211,3 +211,15 @@ jobs:
               comment_id: context.payload.comment.id,
               body: "**Command executed for terraform apply:**\n" + "```" + context.payload.comment.body + "```" + "\n\n**Link:** " + "${{ steps.apply_job_url.outputs.html_url }}#step:6:1\n"
             })
+
+      - name: Comment drift
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            github.rest.issues.createComment({
+              owner: context.repo.owner,
+              issue_number: context.issue.number
+              repo: context.repo.repo,
+              body: "*** Changes Detected ***\n\n" +  "Terraform plan is not clean for: \n" + "```" + "Diectory: " + "${{ steps.plan.outputs.tfplan_dir }}\n" + "Workspace: " + "${{ steps.plan.outputs.tfplan_workspace }}" + "```" + "\n\n**Link: **" +  "${{ steps.job_url.outputs.html_url }}#step:6:1"
+            })
