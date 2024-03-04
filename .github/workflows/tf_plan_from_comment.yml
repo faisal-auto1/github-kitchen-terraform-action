@@ -4,7 +4,6 @@ on:
   issue_comment:
     types:
       - created
-  pull_request:
 
 permissions:
   id-token: write
@@ -150,7 +149,6 @@ jobs:
               comment_id: context.payload.comment.id,
               body: "**Terraform Cmd:** " + "`" + context.payload.comment.body + "`" + "\n\n**Terraform Plan:**\n```diff\n" + data + "```\n" + "\n**Link:** " + "${{ steps.job_url.outputs.html_url }}#step:6:1\n\n" + "**Plan ID:** " + "`" + "${{ steps.plan.outputs.plan_uuid }}" + "`" + "\n\n**How to apply :**\n\n  Please comment again with this command to apply the plan: "+ "```" + "apply" + " ${{ needs.comment.outputs.workspace }}" + " ${{ needs.comment.outputs.tfdir }}" + " ${{ steps.plan.outputs.plan_uuid }}" + "```"
             })
-
 
   tf_apply:
     needs: comment
