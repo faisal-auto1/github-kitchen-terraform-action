@@ -120,9 +120,7 @@ jobs:
 
           terraform show -no-color /tmp/plan-$uuid | tee /tmp/plan-$uuid.txt > /dev/null 2>&1
 
-          #aws sts get-caller-identity
-
-          #aws s3 cp /tmp/plan-$uuid s3://faisal-opsinfra-test/ --region eu-west-1
+          cat /tmp/plan-$uuid.txt | sed -E 's/^([[:space:]]+)([-+])/\2\1/g' > /tmp/final-plan-$uuid.txt
 
         env:
           VAULT_TOKEN_QA: ${{ secrets.VAULT_TOKEN_QA }}
@@ -137,7 +135,7 @@ jobs:
           script: |
 
             const fs = require('fs');
-            let data = fs.readFileSync("/tmp/plan-${{ steps.plan.outputs.plan_uuid }}.txt", 'utf8');
+            let data = fs.readFileSync("/tmp/final-plan-${{ steps.plan.outputs.plan_uuid }}.txt", 'utf8');
             const MAX_GITHUB_COMMENT_LENGTH = 65536;
 
             if (data.length > MAX_GITHUB_COMMENT_LENGTH) {
