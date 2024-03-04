@@ -161,6 +161,7 @@ jobs:
               body: "**Changes Detected**\n\nTerraform plan is not clean for: \n" + "```" + "Diectory: ${{ steps.plan.outputs.tfplan_dir }}\nWorkspace: ${{ steps.plan.outputs.tfplan_workspace }}" + "```" + "\n\n**Link: **" +  "${{ steps.job_url.outputs.html_url }}#step:6:1"
             })
 
+
   tf_apply:
     needs: comment
     if: startsWith(github.event.comment.body, 'apply')
